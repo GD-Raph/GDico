@@ -3,7 +3,9 @@ import { sanitize } from '../utils/helpers.js';
 
 const listContainer = document.getElementById('list-container');
 
-let _onSelectNode = null;
+let _onSelectNode  = null;
+let _activeFilters = new Set();
+let _render        = null;
 
 export function initListView(nodes, nodeMap, onSelectNode) {
   _onSelectNode = onSelectNode;
@@ -11,6 +13,12 @@ export function initListView(nodes, nodeMap, onSelectNode) {
     a.name.localeCompare(b.name, 'fr')
   );
   renderTable(realNodes, nodeMap);
+}
+
+// Called by filters.js via app.js whenever chips change
+export function setListFilter(activeExpertises) {
+  _activeFilters = activeExpertises;
+  _render?.();
 }
 
 function renderTable(initialNodes, nodeMap) {
@@ -31,10 +39,17 @@ function renderTable(initialNodes, nodeMap) {
 
   let sortCol = 'name';
   let sortDir = 1;
-  const nodes = [...initialNodes];
+  const allNodes = [...initialNodes];
 
-  function render() {
-    const data = [...nodes].sort((a, b) => {
+  _render = function render() {
+    const filtered = _activeFilters.size === 0
+      ? allNodes
+      : allNodes.filter(n =>
+          _activeFilters.has(n.primaryExpertise) ||
+          (n.expertises && n.expertises.some(e => _activeFilters.has(e)))
+        );
+
+    const data = [...filtered].sort((a, b) => {
       const av = sortCol === 'expertise' ? (a.primaryExpertise || '') : a.name;
       const bv = sortCol === 'expertise' ? (b.primaryExpertise || '') : b.name;
       return av.localeCompare(bv, 'fr') * sortDir;
@@ -48,9 +63,9 @@ function renderTable(initialNodes, nodeMap) {
         <td class="table-def">${truncate(n.definition, 120)}</td>
       </tr>`;
     }).join('');
-  }
+  };
 
-  render();
+  _render();
 
   listContainer.addEventListener('click', (e) => {
     const row = e.target.closest('.table-row');
@@ -64,7 +79,7 @@ function renderTable(initialNodes, nodeMap) {
       const col = th.dataset.col;
       if (sortCol === col) sortDir *= -1;
       else { sortCol = col; sortDir = 1; }
-      render();
+      _render();
     }
   });
 }

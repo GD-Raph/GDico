@@ -4,14 +4,16 @@ import { filterByExpertises } from '../graph/chart.js';
 const container = document.getElementById('filters-container');
 const activeSet = new Set();
 
-let _chart    = null;
-let _allNodes = [];
-let _allLinks = [];
+let _chart          = null;
+let _allNodes       = [];
+let _allLinks       = [];
+let _onFilterChange = null;
 
-export function initFilters(categories, nodes, links, chart) {
-  _chart    = chart;
-  _allNodes = nodes;
-  _allLinks = links;
+export function initFilters(categories, nodes, links, chart, onFilterChange) {
+  _chart          = chart;
+  _allNodes       = nodes;
+  _allLinks       = links;
+  _onFilterChange = onFilterChange;
 
   container.innerHTML = '';
 
@@ -20,6 +22,7 @@ export function initFilters(categories, nodes, links, chart) {
     activeSet.clear();
     refreshChips();
     filterByExpertises(chart, activeSet, _allNodes, _allLinks);
+    _onFilterChange?.(activeSet);
   });
   container.appendChild(allBtn);
 
@@ -29,6 +32,7 @@ export function initFilters(categories, nodes, links, chart) {
       activeSet.has(name) ? activeSet.delete(name) : activeSet.add(name);
       refreshChips();
       filterByExpertises(chart, activeSet, _allNodes, _allLinks);
+      _onFilterChange?.(activeSet);
     });
     container.appendChild(chip);
   });

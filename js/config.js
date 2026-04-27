@@ -13,6 +13,7 @@ export const EXPERTISE_COLORS = {
   'Audiovisuel':         '#EF4444',
   'Chef de projet / PO': '#F59E0B',
   'Innovation':          '#6366F1',
+  'Accessibilité':       '#14B8A6',
   'Marketing général':   '#64748B',
 };
 

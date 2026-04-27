@@ -4,7 +4,7 @@ import { initChart, renderGraph } from './graph/chart.js';
 import { bindGraphEvents, focusNode, unfocusAll } from './graph/interactions.js';
 import { initSearch }      from './ui/search.js';
 import { initFilters }     from './ui/filters.js';
-import { initListView }    from './ui/list-view.js';
+import { initListView, setListFilter } from './ui/list-view.js';
 import { initViewToggle, switchToGraph } from './ui/view-toggle.js';
 import { openPanel, closePanel } from './ui/panel.js';
 import { hideLoader }      from './ui/loader.js';
@@ -44,7 +44,9 @@ async function boot() {
     handleNodeSelect(node);
   });
 
-  initFilters(categories, nodes, links, chart);
+  initFilters(categories, nodes, links, chart, (activeExpertises) => {
+    setListFilter(activeExpertises);
+  });
 
   initListView(nodes, nodeMap, (node) => {
     switchToGraph();
