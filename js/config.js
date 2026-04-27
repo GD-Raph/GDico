@@ -4,17 +4,17 @@ export const SHEET_CSV_URL = `https://docs.google.com/spreadsheets/d/${SHEET_ID}
 export const CACHE_TTL = 5 * 60 * 1000;
 
 export const EXPERTISE_COLORS = {
-  'Devs':                '#3B82F6',
-  'Data Scientists':     '#8B5CF6',
-  'SEA':                 '#F97316',
-  'SEO':                 '#10B981',
-  'Automation':          '#06B6D4',
-  'Webdesign':           '#EC4899',
-  'Audiovisuel':         '#EF4444',
+  'Devs': '#3B82F6',
+  'Data Scientists': '#8B5CF6',
+  'SEA': '#F97316',
+  'SEO': '#10B981',
+  'Automation': '#06B6D4',
+  'Webdesign': '#EC4899',
+  'Audiovisuel': '#EF4444',
   'Chef de projet / PO': '#F59E0B',
-  'Innovation':          '#6366F1',
-  'Accessibilité':       '#14B8A6',
-  'Marketing général':   '#64748B',
+  'Innovation': '#6366F1',
+  'Accessibilité': '#14B8A6',
+  'Marketing général': '#64748B',
 };
 
 export const GHOST_COLOR = '#CBD5E1';
@@ -30,13 +30,13 @@ export function getExpertiseColor(name) {
 }
 
 export const GRAPH_CONFIG = {
-  repulsion: 280,
-  gravity: 0.12,
-  edgeLength: [60, 140],
-  friction: 0.65,
+  repulsion: 1200,
+  gravity: 0.05,
+  edgeLength: [120, 260],
+  friction: 0.4,
 };
 
 export const NODE_SIZE = {
-  normal: 30,
-  ghost:  16,
+  default: 30, // Utilisé si la colonne 'Taille' est vide
+  ghost: 16,   // Utilisé pour les nœuds fantômes (non présents dans le Sheet)
 };

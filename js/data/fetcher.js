@@ -1,45 +1,35 @@
 import Papa from 'papaparse';
 import { SHEET_CSV_URL, CACHE_TTL } from '../config.js';
 
-const CACHE_KEY = 'gdico_data';
-const CACHE_TS_KEY = 'gdico_ts';
+export async function fetchGlossaryData() {
+  const cached = sessionStorage.getItem('gdico_data');
+  const timestamp = sessionStorage.getItem('gdico_timestamp');
 
-export function fetchData() {
-  const cached = getCache();
-  if (cached) return Promise.resolve(cached);
+  if (cached && timestamp && (Date.now() - timestamp < CACHE_TTL)) {
+    console.log('Using cached data');
+    return JSON.parse(cached);
+  }
 
-  return new Promise((resolve, reject) => {
-    Papa.parse(SHEET_CSV_URL, {
-      download: true,
+  try {
+    const response = await fetch(SHEET_CSV_URL);
+    if (!response.ok) throw new Error('Erreur réseau lors de la récupération du Sheet');
+    
+    const csvText = await response.text();
+    const result = Papa.parse(csvText, {
       header: true,
       skipEmptyLines: true,
-      complete(results) {
-        setCache(results.data);
-        resolve(results.data);
-      },
-      error(err) {
-        reject(new Error(`Impossible de charger le glossaire : ${err.message}`));
-      },
     });
-  });
-}
 
-function getCache() {
-  try {
-    const ts = sessionStorage.getItem(CACHE_TS_KEY);
-    if (!ts || Date.now() - parseInt(ts, 10) > CACHE_TTL) return null;
-    const raw = sessionStorage.getItem(CACHE_KEY);
-    return raw ? JSON.parse(raw) : null;
-  } catch {
-    return null;
-  }
-}
+    if (result.errors.length > 0) {
+      console.warn('Erreurs PapaParse:', result.errors);
+    }
 
-function setCache(data) {
-  try {
-    sessionStorage.setItem(CACHE_KEY, JSON.stringify(data));
-    sessionStorage.setItem(CACHE_TS_KEY, String(Date.now()));
-  } catch {
-    // storage full or unavailable — silently skip
+    sessionStorage.setItem('gdico_data', JSON.stringify(result.data));
+    sessionStorage.setItem('gdico_timestamp', Date.now().toString());
+
+    return result.data;
+  } catch (error) {
+    console.error('Fetch failed:', error);
+    throw error;
   }
 }

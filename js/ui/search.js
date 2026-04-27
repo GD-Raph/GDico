@@ -1,88 +1,57 @@
 import Fuse from 'fuse.js';
-import { debounce } from '../utils/helpers.js';
-import { getExpertiseColor } from '../config.js';
 
-const input    = document.getElementById('search-input');
-const dropdown = document.getElementById('search-dropdown');
+let _fuse = null;
+const searchInput = document.getElementById('search-input');
+const searchResults = document.getElementById('search-results');
 
-let fuse      = null;
-let _nodeMap  = null;
-let _onSelect = null;
-
-export function initSearch(nodes, nodeMap, onSelect) {
-  _nodeMap  = nodeMap;
-  _onSelect = onSelect;
-
-  fuse = new Fuse(nodes.filter(n => !n.isGhost), {
-    keys: [
-      { name: 'name',        weight: 0.7 },
-      { name: 'equivalents', weight: 0.6 },
-      { name: 'definition',  weight: 0.2 },
-    ],
-    threshold: 0.35,
-    includeScore: true,
-    includeMatches: true,
+export function initSearch(nodes, onSelect) {
+  const searchableNodes = nodes.filter(n => !n.isGhost);
+  _fuse = new Fuse(searchableNodes, {
+    keys: ['name', 'definition'],
+    threshold: 0.3,
   });
 
-  input.addEventListener('input', debounce(handleInput, 200));
-  input.addEventListener('keydown', handleKeydown);
+  searchInput.addEventListener('input', (e) => {
+    const query = e.target.value.trim();
+    if (!query) {
+      searchResults.classList.remove('active');
+      return;
+    }
+
+    const results = _fuse.search(query).slice(0, 8);
+    renderResults(results, onSelect);
+  });
+
   document.addEventListener('click', (e) => {
-    if (!e.target.closest('.search-wrapper')) hideDropdown();
+    if (!searchInput.contains(e.target) && !searchResults.contains(e.target)) {
+      searchResults.classList.remove('active');
+    }
   });
 }
 
-function handleInput() {
-  const q = input.value.trim();
-  if (q.length < 2) { hideDropdown(); return; }
-
-  const results = fuse.search(q).slice(0, 8);
-  if (!results.length) { hideDropdown(); return; }
-
-  dropdown.innerHTML = results.map(r => {
-    const color = getExpertiseColor(r.item.primaryExpertise);
-
-    // Detect if the match came from an equivalent (synonym)
-    const equivMatch = r.matches?.find(m => m.key === 'equivalents');
-    const equivHint = equivMatch
-      ? `<span class="search-item-equiv">≡ ${r.item.equivalents[equivMatch.refIndex]}</span>`
-      : '';
-
-    return `<li class="search-item" data-id="${r.item.id}" role="option">
-      <span class="search-item-dot" style="background:${color}"></span>
-      <span class="search-item-name">${r.item.name}</span>
-      ${equivHint}
-      <span class="search-item-exp" style="color:${color}">${r.item.primaryExpertise || ''}</span>
-    </li>`;
-  }).join('');
-
-  dropdown.classList.add('open');
-}
-
-function handleKeydown(e) {
-  if (e.key === 'Escape') { hideDropdown(); input.blur(); return; }
-  if (e.key === 'Enter') {
-    const first = dropdown.querySelector('.search-item');
-    if (first) selectById(first.dataset.id);
+function renderResults(results, onSelect) {
+  if (results.length === 0) {
+    searchResults.innerHTML = '<div class="search-no-result">Aucun résultat</div>';
+  } else {
+    searchResults.innerHTML = results.map(r => `
+      <div class="search-item" data-id="${r.item.id}">
+        <span class="search-item-name">${r.item.name}</span>
+        <span class="search-item-cat">${r.item.primaryExpertise || ''}</span>
+      </div>
+    `).join('');
   }
-  if (e.key === 'ArrowDown') {
-    dropdown.querySelector('.search-item')?.focus();
-  }
-}
 
-dropdown.addEventListener('click', (e) => {
-  const item = e.target.closest('.search-item');
-  if (item) selectById(item.dataset.id);
-});
+  searchResults.classList.add('active');
 
-function selectById(id) {
-  hideDropdown();
-  input.value = '';
-  if (!_nodeMap || !_onSelect) return;
-  const node = _nodeMap.get(id);
-  if (node) _onSelect(node);
-}
-
-function hideDropdown() {
-  dropdown.classList.remove('open');
-  dropdown.innerHTML = '';
+  searchResults.querySelectorAll('.search-item').forEach(item => {
+    item.addEventListener('click', () => {
+      const id = item.dataset.id;
+      const node = results.find(r => r.item.id === id)?.item;
+      if (node) {
+        onSelect(node);
+        searchInput.value = '';
+        searchResults.classList.remove('active');
+      }
+    });
+  });
 }

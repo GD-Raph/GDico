@@ -1,84 +1,79 @@
 <!DOCTYPE html>
 <html lang="fr">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>GDico — Glossaire Marketing</title>
-  <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
-
-  <link rel="stylesheet" href="./css/variables.css" />
-  <link rel="stylesheet" href="./css/base.css" />
-  <link rel="stylesheet" href="./css/layout.css" />
-  <link rel="stylesheet" href="./css/components/loader.css" />
-  <link rel="stylesheet" href="./css/components/search.css" />
-  <link rel="stylesheet" href="./css/components/filters.css" />
-  <link rel="stylesheet" href="./css/components/panel.css" />
-  <link rel="stylesheet" href="./css/components/tooltip.css" />
-  <link rel="stylesheet" href="./css/components/list-view.css" />
-  <link rel="stylesheet" href="./css/components/view-toggle.css" />
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>GDico — GDS Marketing Glossary</title>
+  <meta name="description" content="Glossaire interactif de l'équipe Marketing GDS sous forme de Knowledge Graph.">
+  
+  <!-- Preconnect to Google Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  
+  <!-- CSS -->
+  <link rel="stylesheet" href="./css/variables.css">
+  <link rel="stylesheet" href="./css/base.css">
+  <link rel="stylesheet" href="./css/layout.css">
+  <link rel="stylesheet" href="./css/components/search.css">
+  <link rel="stylesheet" href="./css/components/filters.css">
+  <link rel="stylesheet" href="./css/components/panel.css">
+  <link rel="stylesheet" href="./css/components/tooltip.css">
+  <link rel="stylesheet" href="./css/components/loader.css">
+  <link rel="stylesheet" href="./css/components/list-view.css">
 </head>
 <body>
-
-  <!-- Loading screen -->
   <div id="loader">
     <div class="loader-content">
-      <div class="loader-spinner"></div>
-      <p>Chargement du glossaire…</p>
+      <div class="spinner"></div>
+      <p>Chargement du glossaire GDico...</p>
     </div>
   </div>
 
-  <!-- Header -->
-  <header id="app-header">
+  <header id="main-header">
     <div class="header-left">
-      <h1 class="app-title">GDico</h1>
-      <span class="app-subtitle">Glossaire Marketing</span>
+      <h1 id="logo">GDico</h1>
+      <span class="tagline">Marketing GDS</span>
     </div>
-
+    
     <div class="header-center">
-      <div class="search-wrapper">
-        <input
-          type="text"
-          id="search-input"
-          placeholder="Rechercher un terme…"
-          autocomplete="off"
-          spellcheck="false"
-        />
-        <ul id="search-dropdown" role="listbox"></ul>
+      <div class="search-container">
+        <div class="search-input-wrapper">
+          <svg class="search-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
+          <input type="text" id="search-input" placeholder="Rechercher un terme..." autocomplete="off">
+        </div>
+        <div id="search-results" class="search-dropdown"></div>
       </div>
     </div>
 
     <div class="header-right">
-      <div class="view-toggle" role="group" aria-label="Mode d'affichage">
-        <button id="btn-graph" class="toggle-btn active" aria-pressed="true">
-          Graphe
-        </button>
-        <button id="btn-list" class="toggle-btn" aria-pressed="false">
-          Liste
-        </button>
-      </div>
+      <button id="view-toggle" class="btn-toggle">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="8" y1="6" x2="21" y2="6"></line><line x1="8" y1="12" x2="21" y2="12"></line><line x1="8" y1="18" x2="21" y2="18"></line><line x1="3" y1="6" x2="3.01" y2="6"></line><line x1="3" y1="12" x2="3.01" y2="12"></line><line x1="3" y1="18" x2="3.01" y2="18"></line></svg>
+        <span>Mode Liste</span>
+      </button>
     </div>
   </header>
 
-  <!-- Expertise filters -->
-  <nav id="filters-bar" aria-label="Filtres par expertise">
-    <div id="filters-container"></div>
+  <nav id="filters-container">
+    <!-- Chips will be generated here -->
   </nav>
 
-  <!-- Main views -->
-  <main id="app-main">
-    <div id="graph-container" class="echarts-container" aria-label="Graphe de connaissances"></div>
-    <div id="list-container" class="hidden" aria-label="Liste des termes"></div>
+  <main id="app-content">
+    <div id="graph-view" class="view-container">
+      <div id="echarts-container" class="echarts-container"></div>
+    </div>
+    
+    <div id="list-view" class="view-container hidden">
+      <div id="list-container"></div>
+    </div>
   </main>
 
-  <!-- Term detail panel -->
-  <aside id="detail-panel" aria-label="Détail du terme">
-    <button class="panel-close" aria-label="Fermer le panel">×</button>
-    <div class="panel-content">
-      <h2 class="panel-title"></h2>
-      <div class="panel-expertises"></div>
-      <div class="panel-definition"></div>
-      <div class="panel-equivalents"></div>
-      <div class="panel-links"></div>
+  <aside id="side-panel">
+    <button id="panel-close" class="close-btn" aria-label="Fermer">
+      <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+    </button>
+    <div id="panel-content">
+      <!-- Content will be injected here -->
     </div>
   </aside>
 

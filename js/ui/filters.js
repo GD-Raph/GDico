@@ -1,61 +1,51 @@
-import { getExpertiseColor } from '../config.js';
-import { filterByExpertises } from '../graph/chart.js';
-
-const container = document.getElementById('filters-container');
-const activeSet = new Set();
-
-let _chart          = null;
-let _allNodes       = [];
-let _allLinks       = [];
+const filtersContainer = document.getElementById('filters-container');
 let _onFilterChange = null;
+let _activeExpertises = new Set();
 
-export function initFilters(categories, nodes, links, chart, onFilterChange) {
-  _chart          = chart;
-  _allNodes       = nodes;
-  _allLinks       = links;
+export function initFilters(categories, onFilterChange) {
   _onFilterChange = onFilterChange;
+  
+  const cats = categories
+    .map(c => c.name)
+    .filter(name => name !== 'Fantôme')
+    .sort((a, b) => a.localeCompare(b, 'fr'));
 
-  container.innerHTML = '';
-
-  const allBtn = makeChip('Tous', null, true);
-  allBtn.addEventListener('click', () => {
-    activeSet.clear();
-    refreshChips();
-    filterByExpertises(chart, activeSet, _allNodes, _allLinks);
-    _onFilterChange?.(activeSet);
-  });
-  container.appendChild(allBtn);
-
-  categories.forEach(({ name }) => {
-    const chip = makeChip(name, getExpertiseColor(name), false);
-    chip.addEventListener('click', () => {
-      activeSet.has(name) ? activeSet.delete(name) : activeSet.add(name);
-      refreshChips();
-      filterByExpertises(chart, activeSet, _allNodes, _allLinks);
-      _onFilterChange?.(activeSet);
-    });
-    container.appendChild(chip);
-  });
+  renderFilters(cats);
 }
 
-function makeChip(label, color, active) {
-  const btn = document.createElement('button');
-  btn.className = 'filter-chip' + (active ? ' active' : '');
-  btn.dataset.label = label;
-  btn.textContent = label;
-  if (color) {
-    btn.style.setProperty('--chip-color', color);
-    btn.style.setProperty('--chip-color-dim', color + '22');
-  }
-  return btn;
-}
+function renderFilters(categories) {
+  filtersContainer.innerHTML = `
+    <button class="filter-chip active" data-type="all">Tous</button>
+    ${categories.map(cat => `
+      <button class="filter-chip" data-cat="${cat}">${cat}</button>
+    `).join('')}
+  `;
 
-function refreshChips() {
-  container.querySelectorAll('.filter-chip').forEach(chip => {
-    if (chip.dataset.label === 'Tous') {
-      chip.classList.toggle('active', activeSet.size === 0);
+  filtersContainer.addEventListener('click', (e) => {
+    const btn = e.target.closest('.filter-chip');
+    if (!btn) return;
+
+    if (btn.dataset.type === 'all') {
+      _activeExpertises.clear();
+      filtersContainer.querySelectorAll('.filter-chip').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
     } else {
-      chip.classList.toggle('active', activeSet.has(chip.dataset.label));
+      const cat = btn.dataset.cat;
+      filtersContainer.querySelector('[data-type="all"]').classList.remove('active');
+      
+      if (_activeExpertises.has(cat)) {
+        _activeExpertises.delete(cat);
+        btn.classList.remove('active');
+      } else {
+        _activeExpertises.add(cat);
+        btn.classList.add('active');
+      }
+
+      if (_activeExpertises.size === 0) {
+        filtersContainer.querySelector('[data-type="all"]').classList.add('active');
+      }
     }
+
+    _onFilterChange?.(_activeExpertises);
   });
 }

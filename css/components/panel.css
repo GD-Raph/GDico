@@ -1,123 +1,119 @@
-.panel-close {
-  position: sticky;
+#side-panel {
+  position: fixed;
   top: 0;
-  float: right;
-  margin: 14px 14px 0 0;
+  right: 0;
+  width: var(--panel-width);
+  height: 100vh;
+  background: var(--bg-surface);
+  box-shadow: -10px 0 30px rgba(0,0,0,0.05);
+  z-index: 2000;
+  transform: translateX(100%);
+  transition: transform 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+  padding: 2.5rem 2rem;
+  overflow-y: auto;
+  border-left: 1px solid var(--border-light);
+}
+
+#side-panel.active {
+  transform: translateX(0);
+}
+
+.close-btn {
+  position: absolute;
+  top: 1.5rem;
+  right: 1.5rem;
+  color: var(--text-muted);
   width: 32px;
   height: 32px;
-  border-radius: 50%;
-  background: var(--bg-primary);
-  color: var(--text-secondary);
-  font-size: 20px;
-  line-height: 1;
   display: flex;
   align-items: center;
   justify-content: center;
-  transition: background 0.15s, color 0.15s;
-  z-index: 10;
+  border-radius: var(--radius-full);
+  transition: all 0.2s;
 }
-.panel-close:hover {
-  background: var(--border);
+
+.close-btn:hover {
+  background: var(--bg-primary);
   color: var(--text-primary);
 }
 
-.panel-content {
-  padding: 20px 22px 32px;
-  clear: both;
+.panel-header {
+  margin-bottom: 2rem;
+}
+
+.panel-category-badges {
+  display: flex;
+  gap: 0.5rem;
+  margin-bottom: 1rem;
+  flex-wrap: wrap;
+}
+
+.panel-badge {
+  font-size: 0.75rem;
+  font-weight: 600;
+  padding: 0.25rem 0.75rem;
+  border-radius: var(--radius-full);
+  color: white;
+  background-color: var(--badge-color);
 }
 
 .panel-title {
-  font-size: 20px;
-  font-weight: 700;
-  color: var(--text-primary);
-  letter-spacing: -0.3px;
-  line-height: 1.3;
-  margin-bottom: 12px;
+  font-size: 1.75rem;
+  line-height: 1.2;
+  letter-spacing: -0.03em;
 }
 
-.panel-expertises {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 6px;
-  margin-bottom: 20px;
+.panel-section {
+  margin-bottom: 2.5rem;
 }
 
-.expertise-badge {
-  display: inline-flex;
-  align-items: center;
-  height: 24px;
-  padding: 0 10px;
-  border-radius: 999px;
-  font-size: 11.5px;
+.panel-section-title {
+  font-size: 0.85rem;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--text-muted);
+  margin-bottom: 1rem;
   font-weight: 600;
-  background: color-mix(in srgb, var(--badge-color) 12%, transparent);
-  color: var(--badge-color);
-  border: 1px solid color-mix(in srgb, var(--badge-color) 30%, transparent);
 }
 
 .panel-definition {
-  font-size: 14px;
-  line-height: 1.65;
-  color: var(--text-primary);
-  margin-bottom: 24px;
+  font-size: 1rem;
+  color: var(--text-secondary);
+  line-height: 1.6;
 }
 
-.panel-definition .no-def {
-  color: var(--text-muted);
-}
-
-.links-title {
-  font-size: 12px;
-  font-weight: 600;
-  text-transform: uppercase;
-  letter-spacing: 0.06em;
-  color: var(--text-muted);
-  margin-bottom: 10px;
-}
-
-.equiv-list {
+.panel-related-list {
   display: flex;
   flex-wrap: wrap;
-  gap: 7px;
-  margin-bottom: 24px;
+  gap: 0.75rem;
 }
 
-.equiv-tag {
-  display: inline-flex;
-  align-items: center;
-  height: 26px;
-  padding: 0 10px;
-  border-radius: var(--radius-sm);
+.related-btn {
   background: var(--bg-primary);
-  border: 1.5px solid var(--border);
-  color: var(--text-secondary);
-  font-size: 12.5px;
+  color: var(--text-primary);
+  border: 1px solid var(--border-light);
+  padding: 0.5rem 1rem;
+  border-radius: var(--radius-md);
+  font-size: 0.9rem;
+  font-weight: 500;
+  transition: all 0.2s;
+}
+
+.related-btn:hover {
+  background: var(--bg-surface);
+  border-color: var(--accent);
+  color: var(--accent);
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-sm);
+}
+
+.empty-msg {
+  color: var(--text-muted);
   font-style: italic;
 }
 
-.linked-terms-list {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 8px;
-}
-
-.linked-term-btn {
-  display: inline-flex;
-  align-items: center;
-  height: 30px;
-  padding: 0 12px;
-  border-radius: var(--radius-sm);
-  background: var(--bg-primary);
-  border: 1.5px solid var(--border);
-  color: var(--accent);
-  font-size: 13px;
-  font-weight: 500;
-  transition: all 0.15s var(--ease);
-}
-
-.linked-term-btn:hover {
-  background: var(--accent-light);
-  border-color: var(--accent);
-  transform: translateY(-1px);
-  box-shadow: var(--shadow-sm);
+@media (max-width: 480px) {
+  #side-panel {
+    width: 100%;
+  }
 }

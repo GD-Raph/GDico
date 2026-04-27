@@ -1,37 +1,57 @@
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
-
-*, *::before, *::after {
-  box-sizing: border-box;
+* {
   margin: 0;
   padding: 0;
-}
-
-html, body {
-  height: 100%;
-  overflow: hidden;
+  box-sizing: border-box;
 }
 
 body {
-  font-family: 'Inter', system-ui, -apple-system, sans-serif;
-  background: var(--bg-primary);
+  font-family: var(--font-main);
+  background-color: var(--bg-primary);
   color: var(--text-primary);
-  font-size: 14px;
   line-height: 1.5;
+  overflow: hidden; /* We use a full-screen layout */
   -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+h1, h2, h3, h4 {
+  font-weight: 700;
+  color: var(--text-primary);
 }
 
 button {
-  cursor: pointer;
   font-family: inherit;
+  cursor: pointer;
   border: none;
   background: none;
+  transition: all 0.2s ease;
 }
 
 input {
   font-family: inherit;
+  border: none;
   outline: none;
+}
+
+ul {
+  list-style: none;
 }
 
 .hidden {
   display: none !important;
+}
+
+/* Scrollbar styles */
+::-webkit-scrollbar {
+  width: 8px;
+}
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+::-webkit-scrollbar-thumb {
+  background: var(--border-medium);
+  border-radius: 10px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: var(--text-muted);
 }

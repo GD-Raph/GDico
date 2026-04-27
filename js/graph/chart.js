@@ -42,8 +42,7 @@ export function renderGraph(chart, { nodes, links, categories }) {
       categories,
       roam: true,
       draggable: true,
-      focusNodeAdjacency: true,
-      scaleLimit: { min: 0.3, max: 3 },
+      scaleLimit: { min: 0.2, max: 4 },
       label: {
         show: true,
         position: 'right',
@@ -58,10 +57,11 @@ export function renderGraph(chart, { nodes, links, categories }) {
       },
       lineStyle: {
         color: 'source',
-        width: 2,
-        curveness: 0.25,
-        opacity: 0.55,
+        width: 1.5,
+        curveness: 0.2,
+        opacity: 0.7,
       },
+      autoCurveness: true,
       emphasis: {
         scale: true,
         focus: 'adjacency',
@@ -81,10 +81,10 @@ export function filterByExpertises(chart, activeExpertises, allNodes, allLinks) 
   const filtered = activeExpertises.size === 0
     ? allNodes
     : allNodes.filter(n =>
-        n.isGhost ||
-        activeExpertises.has(n.primaryExpertise) ||
-        (n.expertises && n.expertises.some(e => activeExpertises.has(e)))
-      );
+      n.isGhost ||
+      activeExpertises.has(n.primaryExpertise) ||
+      (n.expertises && n.expertises.some(e => activeExpertises.has(e)))
+    );
 
   const activeNames = new Set(filtered.map(n => n.name));
   const filteredLinks = allLinks.filter(l =>

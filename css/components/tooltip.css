@@ -1,2 +1,7 @@
-/* ECharts tooltip overrides are handled via the tooltip config in chart.js.
-   This file is a placeholder for any additional tooltip customization. */
+/* Tooltip for ECharts is handled via chart.js formatter, but we can add global overrides here */
+.echarts-tooltip {
+  border-radius: var(--radius-md) !important;
+  box-shadow: var(--shadow-lg) !important;
+  border: 1px solid var(--border-light) !important;
+  font-family: var(--font-main) !important;
+}

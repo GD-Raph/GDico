@@ -1,81 +1,65 @@
 import { getExpertiseColor } from '../config.js';
 import { sanitize } from '../utils/helpers.js';
 
-const panel     = document.getElementById('detail-panel');
-const titleEl   = panel.querySelector('.panel-title');
-const expEl     = panel.querySelector('.panel-expertises');
-const defEl     = panel.querySelector('.panel-definition');
-const equivEl   = panel.querySelector('.panel-equivalents');
-const linksEl   = panel.querySelector('.panel-links');
-const closeBtn  = panel.querySelector('.panel-close');
+const panel = document.getElementById('side-panel');
+const panelContent = document.getElementById('panel-content');
+const closeBtn = document.getElementById('panel-close');
 
-let _nodeMap = null;
 let _onNavigate = null;
 
-closeBtn.addEventListener('click', closePanel);
-
-document.addEventListener('mousedown', (e) => {
-  if (panel.classList.contains('open') &&
-      !panel.contains(e.target) &&
-      !e.target.closest('#graph-container')) {
-    closePanel();
-  }
-});
-
-linksEl.addEventListener('click', (e) => {
-  const btn = e.target.closest('.linked-term-btn');
-  if (!btn || !_nodeMap) return;
-  const termName = btn.dataset.term;
-  for (const [, n] of _nodeMap) {
-    if (n.name === termName && !n.isGhost) {
-      openPanel(n, _nodeMap, _onNavigate);
-      _onNavigate?.(n);
-      return;
-    }
-  }
-});
-
-export function openPanel(node, nodeMap, onNavigate) {
-  _nodeMap    = nodeMap;
+export function initPanel(onNavigate) {
   _onNavigate = onNavigate;
-
-  titleEl.textContent = node.name;
-
-  expEl.innerHTML = node.expertises.map(e =>
-    `<span class="expertise-badge" style="--badge-color:${getExpertiseColor(e)}">${sanitize(e)}</span>`
-  ).join('');
-
-  defEl.innerHTML = node.definition
-    ? `<p>${sanitize(node.definition)}</p>`
-    : `<p class="no-def"><em>Aucune définition disponible.</em></p>`;
-
-  if (node.equivalents?.length) {
-    equivEl.innerHTML =
-      `<h4 class="links-title">Aussi appelé</h4>` +
-      `<div class="equiv-list">${
-        node.equivalents.map(e =>
-          `<span class="equiv-tag">${sanitize(e)}</span>`
-        ).join('')
-      }</div>`;
-  } else {
-    equivEl.innerHTML = '';
-  }
-
-  if (node.linkedTerms.length) {
-    linksEl.innerHTML =
-      `<h4 class="links-title">Termes liés</h4>` +
-      `<div class="linked-terms-list">${
-        node.linkedTerms.map(t =>
-          `<button class="linked-term-btn" data-term="${sanitize(t)}">${sanitize(t)}</button>`
-        ).join('')
-      }</div>`;
-  } else {
-    linksEl.innerHTML = '';
-  }
-
-  panel.classList.add('open');
+  closeBtn.addEventListener('click', hidePanel);
+  
+  document.addEventListener('click', (e) => {
+    if (panel.classList.contains('active') && !panel.contains(e.target) && !e.target.closest('.echarts-container') && !e.target.closest('.table-row')) {
+      // hidePanel(); // Temporarily disabled to avoid accidental closing when clicking graph nodes
+    }
+  });
 }
 
-export function closePanel() {
-  panel.classList.remove('open');
+export function showTerm(node) {
+  if (node.isGhost) return;
+
+  const color = getExpertiseColor(node.primaryExpertise);
+  
+  panelContent.innerHTML = `
+    <div class="panel-header">
+      <div class="panel-category-badges">
+        ${(node.expertises || [node.primaryExpertise]).map(exp => `
+          <span class="panel-badge" style="--badge-color: ${getExpertiseColor(exp)}">${sanitize(exp)}</span>
+        `).join('')}
+      </div>
+      <h2 class="panel-title">${sanitize(node.name)}</h2>
+    </div>
+    
+    <div class="panel-section">
+      <h3 class="panel-section-title">Définition</h3>
+      <div class="panel-definition">${sanitize(node.definition) || '<p class="empty-msg">Aucune définition disponible.</p>'}</div>
+    </div>
+
+    ${node.links && node.links.length > 0 ? `
+      <div class="panel-section">
+        <h3 class="panel-section-title">Mots liés</h3>
+        <div class="panel-related-list">
+          ${node.links.map(link => {
+            const targetName = link.target === node.name ? link.source : link.target;
+            return `<button class="related-btn" data-target="${targetName}">${sanitize(targetName)}</button>`;
+          }).join('')}
+        </div>
+      </div>
+    ` : ''}
+  `;
+
+  panel.classList.add('active');
+
+  panelContent.querySelectorAll('.related-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      _onNavigate?.(btn.dataset.target);
+    });
+  });
+}
+
+export function hidePanel() {
+  panel.classList.remove('active');
 }

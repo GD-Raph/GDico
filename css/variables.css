@@ -1,38 +1,32 @@
 :root {
-  /* Surfaces */
-  --bg-primary:   #F0F2FA;
-  --bg-surface:   #FFFFFF;
-  --bg-elevated:  #FFFFFF;
-
-  /* Text */
-  --text-primary:   #1A1D2E;
+  /* Colors - Modern palette */
+  --bg-primary: #F8F9FC;
+  --bg-surface: #FFFFFF;
+  --bg-glass: rgba(255, 255, 255, 0.7);
+  
+  --text-primary: #1A1D2E;
   --text-secondary: #6B7294;
-  --text-muted:     #A0A8C0;
-
-  /* Borders */
-  --border:       #E2E5F1;
-  --border-light: #EEF0F8;
-
-  /* Accent */
-  --accent:       #6366F1;
+  --text-muted: #94A3B8;
+  
+  --accent: #6366F1;
+  --accent-hover: #4F46E5;
   --accent-light: #EEF2FF;
+  
+  --border-light: #E2E5F1;
+  --border-medium: #CBD5E1;
+  
+  --shadow-sm: 0 1px 3px rgba(0,0,0,0.1);
+  --shadow-md: 0 4px 6px -1px rgba(0,0,0,0.1), 0 2px 4px -1px rgba(0,0,0,0.06);
+  --shadow-lg: 0 10px 15px -3px rgba(0,0,0,0.1), 0 4px 6px -2px rgba(0,0,0,0.05);
+  --shadow-premium: 0 20px 25px -5px rgba(0,0,0,0.1), 0 10px 10px -5px rgba(0,0,0,0.04);
+  
+  --radius-sm: 6px;
+  --radius-md: 10px;
+  --radius-lg: 16px;
+  --radius-full: 9999px;
 
-  /* Shadows */
-  --shadow-sm:  0 1px 3px rgba(30,32,54,0.07), 0 1px 2px rgba(30,32,54,0.04);
-  --shadow-md:  0 4px 16px rgba(30,32,54,0.10), 0 2px 4px rgba(30,32,54,0.06);
-  --shadow-lg:  0 8px 32px rgba(30,32,54,0.14), 0 4px 8px rgba(30,32,54,0.08);
-
-  /* Radii */
-  --radius-sm:  6px;
-  --radius-md:  10px;
-  --radius-lg:  16px;
-
-  /* Layout */
-  --header-h:  60px;
-  --filters-h: 52px;
-  --panel-w:   360px;
-
-  /* Transitions */
-  --ease:       cubic-bezier(0.4, 0, 0.2, 1);
-  --ease-spring: cubic-bezier(0.34, 1.56, 0.64, 1);
+  --header-height: 72px;
+  --panel-width: 400px;
+  
+  --font-main: 'Inter', system-ui, -apple-system, sans-serif;
 }
