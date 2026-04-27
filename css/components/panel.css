@@ -75,6 +75,26 @@
   margin-bottom: 10px;
 }
 
+.equiv-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 7px;
+  margin-bottom: 24px;
+}
+
+.equiv-tag {
+  display: inline-flex;
+  align-items: center;
+  height: 26px;
+  padding: 0 10px;
+  border-radius: var(--radius-sm);
+  background: var(--bg-primary);
+  border: 1.5px solid var(--border);
+  color: var(--text-secondary);
+  font-size: 12.5px;
+  font-style: italic;
+}
+
 .linked-terms-list {
   display: flex;
   flex-wrap: wrap;

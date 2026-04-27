@@ -15,11 +15,13 @@ export function initSearch(nodes, nodeMap, onSelect) {
 
   fuse = new Fuse(nodes.filter(n => !n.isGhost), {
     keys: [
-      { name: 'name',       weight: 0.7 },
-      { name: 'definition', weight: 0.3 },
+      { name: 'name',        weight: 0.7 },
+      { name: 'equivalents', weight: 0.6 },
+      { name: 'definition',  weight: 0.2 },
     ],
     threshold: 0.35,
     includeScore: true,
+    includeMatches: true,
   });
 
   input.addEventListener('input', debounce(handleInput, 200));
@@ -38,9 +40,17 @@ function handleInput() {
 
   dropdown.innerHTML = results.map(r => {
     const color = getExpertiseColor(r.item.primaryExpertise);
+
+    // Detect if the match came from an equivalent (synonym)
+    const equivMatch = r.matches?.find(m => m.key === 'equivalents');
+    const equivHint = equivMatch
+      ? `<span class="search-item-equiv">≡ ${r.item.equivalents[equivMatch.refIndex]}</span>`
+      : '';
+
     return `<li class="search-item" data-id="${r.item.id}" role="option">
       <span class="search-item-dot" style="background:${color}"></span>
       <span class="search-item-name">${r.item.name}</span>
+      ${equivHint}
       <span class="search-item-exp" style="color:${color}">${r.item.primaryExpertise || ''}</span>
     </li>`;
   }).join('');
@@ -55,8 +65,7 @@ function handleKeydown(e) {
     if (first) selectById(first.dataset.id);
   }
   if (e.key === 'ArrowDown') {
-    const first = dropdown.querySelector('.search-item');
-    first?.focus();
+    dropdown.querySelector('.search-item')?.focus();
   }
 }
 

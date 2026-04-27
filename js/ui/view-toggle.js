@@ -25,7 +25,6 @@ export function switchToGraph() {
 export function switchToList() {
   listContainer.classList.remove('hidden');
   graphContainer.classList.add('hidden');
-  filtersBar.classList.add('hidden');
   btnList.classList.add('active');
   btnGraph.classList.remove('active');
 }

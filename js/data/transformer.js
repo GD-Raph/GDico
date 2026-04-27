@@ -18,10 +18,18 @@ export function transform(rows) {
       row['Définition'] || row['Definition'] || row['définition'] || row['definition'] || ''
     ).trim();
 
-    // Expertise column: values separated by " / "
+    // Expertise column: multiple expertises separated by ","
     const expertiseRaw = (
       row['Expertise'] || row['Expertises'] || row['expertise'] || row['expertises'] || ''
     ).trim();
+
+    // Equivalents / synonymes: comma-separated
+    const equivalentRaw = (
+      row['Equivalent'] || row['Équivalent'] || row['equivalent'] || row['équivalent'] || ''
+    ).trim();
+    const equivalents = equivalentRaw
+      ? equivalentRaw.split(',').map(e => e.trim()).filter(Boolean)
+      : [];
 
     // Mots Liés: comma-separated
     const linkedRaw = (
@@ -32,7 +40,7 @@ export function transform(rows) {
     const sizeHint = parseInt(row['Taille'] || row['taille'] || '', 10);
 
     const expertises = expertiseRaw
-      ? expertiseRaw.split('/').map(e => e.trim()).filter(Boolean)
+      ? expertiseRaw.split(',').map(e => e.trim()).filter(Boolean)
       : ['Marketing général'];
 
     const primaryExpertise = expertises[0];
@@ -56,6 +64,7 @@ export function transform(rows) {
       expertises,
       primaryExpertise,
       linkedTerms,
+      equivalents,
       isGhost: false,
       symbolSize: baseSize,
       category: primaryExpertise,
@@ -114,7 +123,7 @@ export function transform(rows) {
   const nodes = [...nodeMap.values()];
   const links = [...linkKeys].map(key => {
     const [source, target] = key.split('\x00');
-    return { source, target, lineStyle: { opacity: 0.45, curveness: 0.08 } };
+    return { source, target };
   });
 
   const categories = [...categorySet].map(name => ({

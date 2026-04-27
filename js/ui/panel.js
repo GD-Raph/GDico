@@ -5,6 +5,7 @@ const panel     = document.getElementById('detail-panel');
 const titleEl   = panel.querySelector('.panel-title');
 const expEl     = panel.querySelector('.panel-expertises');
 const defEl     = panel.querySelector('.panel-definition');
+const equivEl   = panel.querySelector('.panel-equivalents');
 const linksEl   = panel.querySelector('.panel-links');
 const closeBtn  = panel.querySelector('.panel-close');
 
@@ -47,6 +48,18 @@ export function openPanel(node, nodeMap, onNavigate) {
   defEl.innerHTML = node.definition
     ? `<p>${sanitize(node.definition)}</p>`
     : `<p class="no-def"><em>Aucune définition disponible.</em></p>`;
+
+  if (node.equivalents?.length) {
+    equivEl.innerHTML =
+      `<h4 class="links-title">Aussi appelé</h4>` +
+      `<div class="equiv-list">${
+        node.equivalents.map(e =>
+          `<span class="equiv-tag">${sanitize(e)}</span>`
+        ).join('')
+      }</div>`;
+  } else {
+    equivEl.innerHTML = '';
+  }
 
   if (node.linkedTerms.length) {
     linksEl.innerHTML =

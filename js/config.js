@@ -4,9 +4,7 @@ export const SHEET_CSV_URL = `https://docs.google.com/spreadsheets/d/${SHEET_ID}
 export const CACHE_TTL = 5 * 60 * 1000;
 
 export const EXPERTISE_COLORS = {
-  'Devs (Front)':        '#3B82F6',
-  'Devs (Back)':         '#1E40AF',
-  'Devs (Mobile)':       '#38BDF8',
+  'Devs':                '#3B82F6',
   'Data Scientists':     '#8B5CF6',
   'SEA':                 '#F97316',
   'SEO':                 '#10B981',
@@ -31,10 +29,10 @@ export function getExpertiseColor(name) {
 }
 
 export const GRAPH_CONFIG = {
-  repulsion: 420,
-  gravity: 0.08,
-  edgeLength: [90, 220],
-  friction: 0.6,
+  repulsion: 280,
+  gravity: 0.12,
+  edgeLength: [60, 140],
+  friction: 0.65,
 };
 
 export const NODE_SIZE = {
