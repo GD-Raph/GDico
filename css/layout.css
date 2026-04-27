@@ -1,0 +1,125 @@
+#app-header {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: var(--header-h);
+  z-index: 100;
+  background: var(--bg-surface);
+  border-bottom: 1px solid var(--border);
+  box-shadow: var(--shadow-sm);
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding: 0 20px;
+}
+
+.header-left {
+  display: flex;
+  align-items: baseline;
+  gap: 10px;
+  flex-shrink: 0;
+}
+
+.app-title {
+  font-size: 22px;
+  font-weight: 700;
+  color: var(--accent);
+  letter-spacing: -0.5px;
+}
+
+.app-subtitle {
+  font-size: 12px;
+  color: var(--text-muted);
+  font-weight: 500;
+}
+
+.header-center {
+  flex: 1;
+  max-width: 480px;
+  margin: 0 auto;
+}
+
+.header-right {
+  flex-shrink: 0;
+}
+
+/* Filters bar */
+#filters-bar {
+  position: fixed;
+  top: var(--header-h);
+  left: 0;
+  right: 0;
+  height: var(--filters-h);
+  z-index: 90;
+  background: var(--bg-surface);
+  border-bottom: 1px solid var(--border-light);
+  display: flex;
+  align-items: center;
+  padding: 0 20px;
+  overflow-x: auto;
+  scrollbar-width: none;
+}
+#filters-bar::-webkit-scrollbar { display: none; }
+
+#filters-container {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  flex-wrap: nowrap;
+  white-space: nowrap;
+}
+
+/* Main area */
+#app-main {
+  position: fixed;
+  top: calc(var(--header-h) + var(--filters-h));
+  left: 0;
+  right: 0;
+  bottom: 0;
+  overflow: hidden;
+}
+
+#graph-container {
+  width: 100%;
+  height: 100%;
+}
+
+/* List container */
+#list-container {
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+}
+
+/* Detail panel */
+#detail-panel {
+  position: fixed;
+  top: var(--header-h);
+  right: 0;
+  bottom: 0;
+  width: var(--panel-w);
+  z-index: 200;
+  background: var(--bg-surface);
+  border-left: 1px solid var(--border);
+  box-shadow: var(--shadow-lg);
+  transform: translateX(100%);
+  transition: transform 0.3s var(--ease);
+  overflow-y: auto;
+  overflow-x: hidden;
+}
+
+#detail-panel.open {
+  transform: translateX(0);
+}
+
+/* Responsive: panel as overlay on narrow screens */
+@media (max-width: 768px) {
+  :root { --panel-w: 100vw; }
+  #detail-panel {
+    top: 0;
+    border-left: none;
+  }
+}

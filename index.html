@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>GDico — Glossaire Marketing</title>
+  <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
+
+  <link rel="stylesheet" href="./css/variables.css" />
+  <link rel="stylesheet" href="./css/base.css" />
+  <link rel="stylesheet" href="./css/layout.css" />
+  <link rel="stylesheet" href="./css/components/loader.css" />
+  <link rel="stylesheet" href="./css/components/search.css" />
+  <link rel="stylesheet" href="./css/components/filters.css" />
+  <link rel="stylesheet" href="./css/components/panel.css" />
+  <link rel="stylesheet" href="./css/components/tooltip.css" />
+  <link rel="stylesheet" href="./css/components/list-view.css" />
+  <link rel="stylesheet" href="./css/components/view-toggle.css" />
+</head>
+<body>
+
+  <!-- Loading screen -->
+  <div id="loader">
+    <div class="loader-content">
+      <div class="loader-spinner"></div>
+      <p>Chargement du glossaire…</p>
+    </div>
+  </div>
+
+  <!-- Header -->
+  <header id="app-header">
+    <div class="header-left">
+      <h1 class="app-title">GDico</h1>
+      <span class="app-subtitle">Glossaire Marketing</span>
+    </div>
+
+    <div class="header-center">
+      <div class="search-wrapper">
+        <input
+          type="text"
+          id="search-input"
+          placeholder="Rechercher un terme…"
+          autocomplete="off"
+          spellcheck="false"
+        />
+        <ul id="search-dropdown" role="listbox"></ul>
+      </div>
+    </div>
+
+    <div class="header-right">
+      <div class="view-toggle" role="group" aria-label="Mode d'affichage">
+        <button id="btn-graph" class="toggle-btn active" aria-pressed="true">
+          Graphe
+        </button>
+        <button id="btn-list" class="toggle-btn" aria-pressed="false">
+          Liste
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <!-- Expertise filters -->
+  <nav id="filters-bar" aria-label="Filtres par expertise">
+    <div id="filters-container"></div>
+  </nav>
+
+  <!-- Main views -->
+  <main id="app-main">
+    <div id="graph-container" class="echarts-container" aria-label="Graphe de connaissances"></div>
+    <div id="list-container" class="hidden" aria-label="Liste des termes"></div>
+  </main>
+
+  <!-- Term detail panel -->
+  <aside id="detail-panel" aria-label="Détail du terme">
+    <button class="panel-close" aria-label="Fermer le panel">×</button>
+    <div class="panel-content">
+      <h2 class="panel-title"></h2>
+      <div class="panel-expertises"></div>
+      <div class="panel-definition"></div>
+      <div class="panel-links"></div>
+    </div>
+  </aside>
+
+  <script type="module" src="./js/app.js"></script>
+</body>
+</html>

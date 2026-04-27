@@ -1,0 +1,34 @@
+.filter-chip {
+  display: inline-flex;
+  align-items: center;
+  height: 30px;
+  padding: 0 14px;
+  border-radius: 999px;
+  font-size: 12.5px;
+  font-weight: 500;
+  color: var(--text-secondary);
+  border: 1.5px solid var(--border);
+  background: var(--bg-surface);
+  transition: all 0.18s var(--ease);
+  white-space: nowrap;
+  user-select: none;
+}
+
+.filter-chip:hover {
+  border-color: var(--chip-color, var(--accent));
+  color: var(--chip-color, var(--accent));
+  background: var(--chip-color-dim, var(--accent-light));
+}
+
+.filter-chip.active {
+  background: var(--chip-color, var(--accent));
+  border-color: var(--chip-color, var(--accent));
+  color: #fff;
+  box-shadow: 0 2px 8px color-mix(in srgb, var(--chip-color, var(--accent)) 35%, transparent);
+}
+
+.filter-chip[data-label="Tous"].active {
+  background: var(--text-secondary);
+  border-color: var(--text-secondary);
+  color: #fff;
+}
