@@ -1,4 +1,4 @@
-# GPTW-Glossaire
+# Glossaire
 
 Glossary project for GPTW.
 
