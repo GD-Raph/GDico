@@ -76,8 +76,19 @@ export function initTermForm(allData, nodeMap, editNode, onRefresh) {
     nameInput.addEventListener('input', handleNameInput);
     linkedInput.addEventListener('input', handleLinkedInput);
 
+    // Close name suggestions on blur (delay lets a suggestion click register first)
+    nameInput.addEventListener('blur', () => setTimeout(() => hideSuggestions(), 150));
+    // Close linked suggestions on blur
+    linkedInput.addEventListener('blur', () => setTimeout(() => { linkedSuggestions.classList.add('hidden'); }, 150));
+
     document.addEventListener('keydown', (e) => {
-      if (e.key === 'Escape' && !overlay.classList.contains('hidden')) closeForm();
+      if (e.key === 'Escape') {
+        if (!nameSuggestions.classList.contains('hidden') || !similarWarning.classList.contains('hidden')) {
+          hideSuggestions();   // Escape ferme d'abord les suggestions
+        } else if (!overlay.classList.contains('hidden')) {
+          closeForm();          // puis la modale
+        }
+      }
     });
   } else {
     // Called from panel "Modifier" button
