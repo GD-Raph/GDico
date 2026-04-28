@@ -56,7 +56,7 @@ export function renderGraph(chart, { nodes, links, categories }) {
       show: true,
       enterable: false,
       formatter(params) {
-        if (params.dataType !== 'node') return '';
+        if (params.dataType !== 'node') return null; // no tooltip on edges
         const d = params.data;
         if (d.isGhost) return `<b>${d.name}</b><br><span style="color:#94A3B8;font-style:italic">Terme non encore défini</span>`;
         const exp = d.expertises?.join(' · ') || '';
@@ -93,10 +93,9 @@ export function renderGraph(chart, { nodes, links, categories }) {
         hideOverlap: true,
       },
       lineStyle: {
-        color: 'source',
+        // color handled per-link in _cleanLinks (see app.js _buildNodeMap)
         width: 1,
         curveness: 0.2,
-        opacity: 0.7,
       },
       autoCurveness: true,
       emphasis: {
@@ -154,20 +153,20 @@ function _centerOnNode(chart, dataIndex) {
 }
 
 export function filterByExpertises(chart, activeExpertises, allNodes, allLinks) {
-  // Reset focus state when filtering
   _focusedIndex = -1;
 
-  const filtered = activeExpertises.size === 0
-    ? allNodes
-    : allNodes.filter(n =>
-      n.isGhost ||
-      activeExpertises.has(n.primaryExpertise) ||
-      (n.expertises && n.expertises.some(e => activeExpertises.has(e)))
-    );
+  const isVisible = (n) =>
+    activeExpertises.size === 0 ||
+    n.isGhost ||
+    activeExpertises.has(n.primaryExpertise) ||
+    (n.expertises && n.expertises.some(e => activeExpertises.has(e)));
 
-  const activeNames = new Set(filtered.map(n => n.name));
+  const filtered = allNodes.filter(isVisible);
+  const visibleNames = new Set(filtered.map(n => n.name));
+
+  // allLinks are _cleanLinks (string names, not mutated by ECharts)
   const filteredLinks = allLinks.filter(l =>
-    activeNames.has(l.source) && activeNames.has(l.target)
+    visibleNames.has(l.source) && visibleNames.has(l.target)
   );
 
   chart.setOption({ series: [{ data: filtered, links: filteredLinks }] });

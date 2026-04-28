@@ -8,10 +8,12 @@ import { initListView, updateListView, setListFilter } from './ui/list-view.js';
 import { initViewToggle } from './ui/view-toggle.js';
 import { showLoader, hideLoader, showError } from './ui/loader.js';
 import { initTermForm, updateTermFormData } from './ui/term-form.js';
+import { getExpertiseColor } from './config.js';
 
-let _allData = null;
-let _nodeMap  = new Map();
-let _chart    = null;
+let _allData    = null;
+let _nodeMap    = new Map();
+let _cleanLinks = [];   // snapshot with string names + per-link colors, before ECharts mutates
+let _chart      = null;
 
 async function init() {
   showLoader();
@@ -22,7 +24,7 @@ async function init() {
     _buildNodeMap();
 
     _chart = initChart(document.getElementById('echarts-container'));
-    renderGraph(_chart, _allData);
+    renderGraph(_chart, { nodes: _allData.nodes, links: _cleanLinks, categories: _allData.categories });
     initFocusPersistence(_chart);
 
     const onDismiss = () => { unfocusAll(_chart); showPlaceholder(); };
@@ -42,7 +44,7 @@ async function init() {
     initSearch(_allData.nodes, onNodeSelect);
 
     initFilters(_allData.categories, (activeExpertises) => {
-      filterByExpertises(_chart, activeExpertises, _allData.nodes, _allData.links);
+      filterByExpertises(_chart, activeExpertises, _allData.nodes, _cleanLinks);
       setListFilter(activeExpertises);
     });
 
@@ -72,7 +74,7 @@ async function refreshData() {
     _allData = transformData(rawData);
     _buildNodeMap();
 
-    renderGraph(_chart, _allData);
+    renderGraph(_chart, { nodes: _allData.nodes, links: _cleanLinks, categories: _allData.categories });
     updateSearch(_allData.nodes);
     updateFilterChips(_allData.categories);
     updateListView(_allData.nodes, _nodeMap);
@@ -90,6 +92,26 @@ async function refreshData() {
 function _buildNodeMap() {
   _nodeMap = new Map();
   _allData.nodes.forEach(n => _nodeMap.set(n.id, n));
+
+  // Snapshot clean string links + compute per-link color BEFORE ECharts can mutate them
+  _cleanLinks = _allData.links.map(l => {
+    const srcNode = _nodeMap.get(l.source);
+    const tgtNode = _nodeMap.get(l.target);
+    const srcColor = getExpertiseColor(srcNode?.primaryExpertise);
+    const tgtColor = getExpertiseColor(tgtNode?.primaryExpertise);
+    return {
+      source: l.source,
+      target: l.target,
+      // Disable hover on edges — only nodes trigger emphasis
+      emphasis: { disabled: true },
+      lineStyle: {
+        color:   srcColor === tgtColor ? srcColor : '#94A3B8',
+        opacity: 0.5,
+      },
+    };
+  });
+
+  // Attach link refs to source nodes for the panel "Mots liés" display
   _allData.links.forEach(l => {
     const src = _nodeMap.get(l.source);
     if (src) {
