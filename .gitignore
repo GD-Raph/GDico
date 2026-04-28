@@ -22,3 +22,6 @@ yarn-error.log*
 .env.development.local
 .env.test.local
 .env.production.local
+
+# Credentials
+datalake-380714-d2e17ea483d1.json

@@ -4,6 +4,18 @@ let _fuse = null;
 const searchInput = document.getElementById('search-input');
 const searchResults = document.getElementById('search-results');
 
+export function updateSearch(nodes) {
+  _fuse = new Fuse(nodes.filter(n => !n.isGhost), {
+    keys: [
+      { name: 'name',        weight: 0.7 },
+      { name: 'equivalents', weight: 0.6 },
+      { name: 'definition',  weight: 0.2 },
+    ],
+    threshold: 0.35,
+    includeMatches: true,
+  });
+}
+
 export function initSearch(nodes, onSelect) {
   const searchableNodes = nodes.filter(n => !n.isGhost);
   _fuse = new Fuse(searchableNodes, {

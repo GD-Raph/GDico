@@ -1,16 +1,17 @@
 import { fetchGlossaryData } from './data/fetcher.js';
 import { transformData } from './data/transformer.js';
 import { initChart, renderGraph, filterByExpertises, focusNode, unfocusAll, initFocusPersistence } from './graph/chart.js';
-import { initSearch } from './ui/search.js';
-import { initFilters } from './ui/filters.js';
+import { initSearch, updateSearch } from './ui/search.js';
+import { initFilters, updateFilterChips } from './ui/filters.js';
 import { initPanel, showTerm, showPlaceholder } from './ui/panel.js';
-import { initListView, setListFilter } from './ui/list-view.js';
+import { initListView, updateListView, setListFilter } from './ui/list-view.js';
 import { initViewToggle } from './ui/view-toggle.js';
 import { showLoader, hideLoader, showError } from './ui/loader.js';
-import { initTermForm } from './ui/term-form.js';
+import { initTermForm, updateTermFormData } from './ui/term-form.js';
 
 let _allData = null;
-let _nodeMap = new Map();
+let _nodeMap  = new Map();
+let _chart    = null;
 
 async function init() {
   showLoader();
@@ -18,69 +19,84 @@ async function init() {
   try {
     const rawData = await fetchGlossaryData();
     _allData = transformData(rawData);
+    _buildNodeMap();
 
-    _allData.nodes.forEach(n => _nodeMap.set(n.id, n));
+    _chart = initChart(document.getElementById('echarts-container'));
+    renderGraph(_chart, _allData);
+    initFocusPersistence(_chart);
 
-    _allData.links.forEach(l => {
-      const sourceNode = _nodeMap.get(l.source);
-      if (sourceNode) {
-        if (!sourceNode.links) sourceNode.links = [];
-        sourceNode.links.push(l);
-      }
-    });
-
-    const chart = initChart(document.getElementById('echarts-container'));
-    renderGraph(chart, _allData);
-    initFocusPersistence(chart);
-
-    const onDismiss = () => {
-      unfocusAll(chart);
-      showPlaceholder();
-    };
+    const onDismiss = () => { unfocusAll(_chart); showPlaceholder(); };
 
     const onNodeSelect = (node, echartsIdx = null) => {
       if (node.isGhost) return;
-      const idx = echartsIdx ?? getEchartsIdx(chart, node.id);
-      focusNode(chart, idx);
+      const idx = echartsIdx ?? getEchartsIdx(_chart, node.id);
+      focusNode(_chart, idx);
       showTerm(node, onDismiss);
     };
 
-    // Click on graph background → dismiss
-    chart.getZr().on('click', (e) => {
-      if (!e.target) onDismiss();
+    _chart.getZr().on('click', (e) => { if (!e.target) onDismiss(); });
+    _chart.on('click', (params) => {
+      if (params.dataType === 'node') onNodeSelect(params.data, params.dataIndex);
     });
 
     initSearch(_allData.nodes, onNodeSelect);
 
     initFilters(_allData.categories, (activeExpertises) => {
-      filterByExpertises(chart, activeExpertises, _allData.nodes, _allData.links);
+      filterByExpertises(_chart, activeExpertises, _allData.nodes, _allData.links);
       setListFilter(activeExpertises);
     });
 
     initPanel(
-      (targetId) => {
-        const targetNode = _nodeMap.get(targetId);
-        if (targetNode) onNodeSelect(targetNode);
-      },
-      (node) => initTermForm(_allData, _nodeMap, node, onRefresh)
+      (targetId) => { const n = _nodeMap.get(targetId); if (n) onNodeSelect(n); },
+      (node)     => initTermForm(_allData, _nodeMap, node, refreshData)
     );
 
     initListView(_allData.nodes, _nodeMap, onNodeSelect);
     initViewToggle();
-
-    chart.on('click', (params) => {
-      if (params.dataType === 'node') {
-        onNodeSelect(params.data, params.dataIndex);
-      }
-    });
-
-    initTermForm(_allData, _nodeMap, null, onRefresh);
+    initTermForm(_allData, _nodeMap, null, refreshData);
 
     hideLoader();
   } catch (error) {
     showError("Impossible de charger les données du glossaire. Veuillez vérifier votre connexion ou l'URL du Google Sheet.");
     console.error(error);
   }
+}
+
+async function refreshData() {
+  sessionStorage.removeItem('gdico_data');
+  sessionStorage.removeItem('gdico_timestamp');
+  showLoader();
+
+  try {
+    const rawData = await fetchGlossaryData();
+    _allData = transformData(rawData);
+    _buildNodeMap();
+
+    renderGraph(_chart, _allData);
+    updateSearch(_allData.nodes);
+    updateFilterChips(_allData.categories);
+    updateListView(_allData.nodes, _nodeMap);
+    updateTermFormData(_allData, _nodeMap);
+    showPlaceholder();
+    unfocusAll(_chart);
+
+    hideLoader();
+  } catch (error) {
+    showError("Impossible de rafraîchir les données.");
+    console.error(error);
+  }
+}
+
+function _buildNodeMap() {
+  _nodeMap = new Map();
+  _allData.nodes.forEach(n => _nodeMap.set(n.id, n));
+  _allData.links.forEach(l => {
+    const src = _nodeMap.get(l.source);
+    if (src) {
+      if (!src.links) src.links = [];
+      src.links.push(l);
+    }
+  });
 }
 
 function getEchartsIdx(chart, nodeId) {
@@ -91,12 +107,6 @@ function getEchartsIdx(chart, nodeId) {
     }
   } catch (_) {}
   return -1;
-}
-
-async function onRefresh() {
-  sessionStorage.removeItem('gdico_data');
-  sessionStorage.removeItem('gdico_timestamp');
-  await init();
 }
 
 document.addEventListener('DOMContentLoaded', init);

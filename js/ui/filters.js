@@ -4,13 +4,24 @@ let _activeExpertises = new Set();
 
 export function initFilters(categories, onFilterChange) {
   _onFilterChange = onFilterChange;
+  const cats = _sortCats(categories);
+  renderFilters(cats);
+}
 
-  const cats = categories
+export function updateFilterChips(categories) {
+  _activeExpertises.clear();
+  const cats = _sortCats(categories);
+  filterChips.innerHTML = `
+    <button class="filter-chip active" data-type="all">Tous</button>
+    ${cats.map(cat => `<button class="filter-chip" data-cat="${cat}">${cat}</button>`).join('')}
+  `;
+}
+
+function _sortCats(categories) {
+  return categories
     .map(c => c.name)
     .filter(name => name !== 'Fantôme')
     .sort((a, b) => a.localeCompare(b, 'fr'));
-
-  renderFilters(cats);
 }
 
 function renderFilters(categories) {

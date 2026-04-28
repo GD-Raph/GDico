@@ -4,10 +4,22 @@ import { forceLayout } from './layout.js';
 let _chart = null;
 let _focusedIndex = -1;
 let _isHovering = false;
+let _resizeHandler = null;
 
 export function initChart(container) {
+  // Dispose existing instance to avoid the "already initialized" error on refresh
+  const existing = echarts.getInstanceByDom(container);
+  if (existing) existing.dispose();
+
+  _focusedIndex = -1;
+  _isHovering = false;
+
   _chart = echarts.init(container, null, { renderer: 'canvas' });
-  window.addEventListener('resize', () => _chart.resize());
+
+  if (_resizeHandler) window.removeEventListener('resize', _resizeHandler);
+  _resizeHandler = () => _chart.resize();
+  window.addEventListener('resize', _resizeHandler);
+
   return _chart;
 }
 
@@ -82,7 +94,7 @@ export function renderGraph(chart, { nodes, links, categories }) {
       },
       lineStyle: {
         color: 'source',
-        width: 1.5,
+        width: 1,
         curveness: 0.2,
         opacity: 0.7,
       },

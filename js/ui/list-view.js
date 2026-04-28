@@ -15,6 +15,14 @@ export function initListView(nodes, nodeMap, onSelectNode) {
   renderTable(realNodes, nodeMap);
 }
 
+export function updateListView(nodes, nodeMap) {
+  _activeFilters = new Set();
+  const realNodes = nodes.filter(n => !n.isGhost).sort((a, b) =>
+    a.name.localeCompare(b.name, 'fr')
+  );
+  renderTable(realNodes, nodeMap);
+}
+
 // Called by filters.js via app.js whenever chips change
 export function setListFilter(activeExpertises) {
   _activeFilters = activeExpertises;

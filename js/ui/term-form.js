@@ -31,6 +31,22 @@ let _fuse      = null;
 let _selectedExpertises = new Set();
 let _allCategories = [];
 
+export function updateTermFormData(allData, nodeMap) {
+  _allData = allData;
+  _nodeMap = nodeMap;
+  _fuse = new Fuse(allData.nodes.filter(n => !n.isGhost), {
+    keys: [
+      { name: 'name',        weight: 0.8 },
+      { name: 'equivalents', weight: 0.5 },
+    ],
+    threshold: 0.3,
+  });
+  _allCategories = allData.categories
+    .map(c => c.name)
+    .filter(n => n !== 'Fantôme')
+    .sort((a, b) => a.localeCompare(b, 'fr'));
+}
+
 export function initTermForm(allData, nodeMap, editNode, onRefresh) {
   _allData   = allData;
   _nodeMap   = nodeMap;
@@ -258,6 +274,7 @@ async function submitToSheet(payload) {
   try {
     const res = await fetch(SHEET_WRITE_URL, {
       method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(payload),
     });
 
