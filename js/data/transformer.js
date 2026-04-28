@@ -1,5 +1,4 @@
 import { getExpertiseColor, NODE_SIZE } from '../config.js';
-import { slugify } from '../utils/helpers.js';
 
 export function transformData(rawData) {
   const nodes = [];
@@ -7,7 +6,7 @@ export function transformData(rawData) {
   const categoriesSet = new Set();
   const definedTerms = new Set();
 
-  // 1. First pass: Identify all defined terms
+  // 1. First pass: identify all defined terms
   rawData.forEach(row => {
     const name = (row['Terme'] || '').trim();
     if (name) definedTerms.add(name);
@@ -15,7 +14,7 @@ export function transformData(rawData) {
 
   const potentialGhosts = new Set();
 
-  // 2. Second pass: Create nodes and gather potential ghosts
+  // 2. Second pass: create nodes and gather potential ghosts
   rawData.forEach(row => {
     const name = (row['Terme'] || '').trim();
     if (!name) return;
@@ -23,11 +22,15 @@ export function transformData(rawData) {
     const expertiseStr = row['Expertise'] || '';
     const expertises = expertiseStr.split(',').map(e => e.trim()).filter(e => e);
     const primaryExpertise = expertises[0] || 'Marketing général';
-    
+
     expertises.forEach(e => categoriesSet.add(e));
     if (primaryExpertise) categoriesSet.add(primaryExpertise);
 
-    // Node size from 'Taille' column, fallback to config
+    const equivalentRaw = (row['Equivalent'] || row['Équivalent'] || row['equivalent'] || row['équivalent'] || '').trim();
+    const equivalents = equivalentRaw
+      ? equivalentRaw.split(',').map(e => e.trim()).filter(Boolean)
+      : [];
+
     let size = parseFloat(row['Taille']);
     if (isNaN(size) || size <= 0) {
       size = NODE_SIZE.default;
@@ -42,6 +45,7 @@ export function transformData(rawData) {
       primaryExpertise: primaryExpertise,
       expertises: expertises,
       definition: row['Définition'] || '',
+      equivalents: equivalents,
       isGhost: false,
       itemStyle: {
         color: getExpertiseColor(primaryExpertise),
@@ -52,7 +56,7 @@ export function transformData(rawData) {
 
     const relatedStr = row['Mots Liés'] || '';
     const related = relatedStr.split(',').map(r => r.trim()).filter(r => r);
-    
+
     related.forEach(target => {
       links.push({ source: name, target: target });
       if (!definedTerms.has(target)) {
@@ -71,6 +75,7 @@ export function transformData(rawData) {
       category: 'Fantôme',
       isGhost: true,
       definition: '',
+      equivalents: [],
       itemStyle: {
         color: '#CBD5E1',
         borderColor: '#94A3B8',
@@ -82,6 +87,6 @@ export function transformData(rawData) {
   });
 
   const categories = Array.from(categoriesSet).map(name => ({ name }));
-  
+
   return { nodes, links, categories };
 }

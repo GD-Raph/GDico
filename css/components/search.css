@@ -85,6 +85,14 @@
   color: var(--text-primary);
 }
 
+.search-item-equiv {
+  font-size: 0.78rem;
+  color: var(--text-muted);
+  font-style: italic;
+  flex: 1;
+  padding: 0 0.5rem;
+}
+
 .search-item-cat {
   font-size: 0.75rem;
   color: var(--text-secondary);

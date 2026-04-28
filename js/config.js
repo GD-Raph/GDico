@@ -3,6 +3,10 @@ export const SHEET_GID = '0';
 export const SHEET_CSV_URL = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/export?format=csv&gid=${SHEET_GID}`;
 export const CACHE_TTL = 5 * 60 * 1000;
 
+// Google Apps Script Web App URL for writing (create/update/delete terms).
+// Leave empty until the Apps Script is deployed.
+export const SHEET_WRITE_URL = '';
+
 export const EXPERTISE_COLORS = {
   'Devs': '#3B82F6',
   'Data Scientists': '#8B5CF6',

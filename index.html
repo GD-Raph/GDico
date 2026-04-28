@@ -5,12 +5,12 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>GDico — GDS Marketing Glossary</title>
   <meta name="description" content="Glossaire interactif de l'équipe Marketing GDS sous forme de Knowledge Graph.">
-  
+
   <!-- Preconnect to Google Fonts -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
-  
+
   <!-- CSS -->
   <link rel="stylesheet" href="./css/variables.css">
   <link rel="stylesheet" href="./css/base.css">
@@ -21,6 +21,7 @@
   <link rel="stylesheet" href="./css/components/tooltip.css">
   <link rel="stylesheet" href="./css/components/loader.css">
   <link rel="stylesheet" href="./css/components/list-view.css">
+  <link rel="stylesheet" href="./css/components/form.css">
 </head>
 <body>
   <div id="loader">
@@ -35,7 +36,7 @@
       <h1 id="logo">GDico</h1>
       <span class="tagline">Marketing GDS</span>
     </div>
-    
+
     <div class="header-center">
       <div class="search-container">
         <div class="search-input-wrapper">
@@ -45,37 +46,97 @@
         <div id="search-results" class="search-dropdown"></div>
       </div>
     </div>
-
-    <div class="header-right">
-      <button id="view-toggle" class="btn-toggle">
-        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="8" y1="6" x2="21" y2="6"></line><line x1="8" y1="12" x2="21" y2="12"></line><line x1="8" y1="18" x2="21" y2="18"></line><line x1="3" y1="6" x2="3.01" y2="6"></line><line x1="3" y1="12" x2="3.01" y2="12"></line><line x1="3" y1="18" x2="3.01" y2="18"></line></svg>
-        <span>Mode Liste</span>
-      </button>
-    </div>
   </header>
 
   <nav id="filters-container">
-    <!-- Chips will be generated here -->
+    <div id="filter-chips"></div>
+    <div class="filter-actions">
+      <button id="view-toggle" class="btn-toggle">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="8" y1="6" x2="21" y2="6"></line><line x1="8" y1="12" x2="21" y2="12"></line><line x1="8" y1="18" x2="21" y2="18"></line><line x1="3" y1="6" x2="3.01" y2="6"></line><line x1="3" y1="12" x2="3.01" y2="12"></line><line x1="3" y1="18" x2="3.01" y2="18"></line></svg>
+        <span>Mode Liste</span>
+      </button>
+      <button id="add-term-btn" class="btn-add-term">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
+        <span>Ajouter un terme</span>
+      </button>
+    </div>
   </nav>
 
-  <main id="app-content">
-    <div id="graph-view" class="view-container">
-      <div id="echarts-container" class="echarts-container"></div>
-    </div>
-    
-    <div id="list-view" class="view-container hidden">
-      <div id="list-container"></div>
-    </div>
-  </main>
+  <div id="content-wrapper">
+    <main id="app-content">
+      <div id="graph-view" class="view-container">
+        <div id="echarts-container" class="echarts-container"></div>
+      </div>
 
-  <aside id="side-panel">
-    <button id="panel-close" class="close-btn" aria-label="Fermer">
-      <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
-    </button>
-    <div id="panel-content">
-      <!-- Content will be injected here -->
+      <div id="list-view" class="view-container hidden">
+        <div id="list-container"></div>
+      </div>
+    </main>
+
+    <aside id="side-panel">
+      <div id="panel-content">
+        <div class="panel-placeholder">
+          <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" style="color: var(--border-medium)"><circle cx="11" cy="11" r="8"/><circle cx="11" cy="11" r="3"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+          <p>Cliquez sur un terme<br>pour voir sa définition</p>
+        </div>
+      </div>
+    </aside>
+  </div>
+
+  <!-- Term Form Modal -->
+  <div id="term-form-overlay" class="hidden">
+    <div id="term-form-dialog" role="dialog" aria-modal="true" aria-labelledby="form-title">
+      <div class="form-header">
+        <h2 id="form-title">Ajouter un terme</h2>
+        <button id="form-close" class="form-close-btn" aria-label="Fermer">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+        </button>
+      </div>
+
+      <form id="term-form" novalidate>
+        <div class="form-field">
+          <label class="form-label" for="form-name">Terme <span class="form-required">*</span></label>
+          <input type="text" id="form-name" class="form-input" autocomplete="off" placeholder="Ex : Customer Relationship Management">
+          <div id="form-name-suggestions" class="form-suggestions hidden"></div>
+          <div id="form-similar-warning" class="form-warning hidden"></div>
+        </div>
+
+        <div class="form-field">
+          <label class="form-label" for="form-definition">Définition</label>
+          <textarea id="form-definition" class="form-textarea" rows="4" placeholder="Description complète du terme..."></textarea>
+        </div>
+
+        <div class="form-field">
+          <label class="form-label">Expertise(s)</label>
+          <div id="form-expertises" class="form-expertise-chips"></div>
+        </div>
+
+        <div class="form-field">
+          <label class="form-label" for="form-equivalents">Équivalents / synonymes</label>
+          <input type="text" id="form-equivalents" class="form-input" placeholder="CRM, Gestion relation client…  (séparés par virgule)">
+        </div>
+
+        <div class="form-field">
+          <label class="form-label" for="form-linked">Mots liés</label>
+          <input type="text" id="form-linked" class="form-input" autocomplete="off" placeholder="SEO, KPI, Conversion…  (séparés par virgule)">
+          <div id="form-linked-suggestions" class="form-suggestions hidden"></div>
+        </div>
+
+        <div class="form-field form-field--narrow">
+          <label class="form-label" for="form-size">Taille du nœud</label>
+          <input type="number" id="form-size" class="form-input" min="10" max="80" placeholder="30">
+        </div>
+
+        <div class="form-actions">
+          <button type="button" id="form-delete" class="btn-danger hidden">Supprimer</button>
+          <div class="form-actions-right">
+            <button type="button" id="form-cancel" class="btn-secondary">Annuler</button>
+            <button type="submit" id="form-submit" class="btn-primary">Enregistrer</button>
+          </div>
+        </div>
+      </form>
     </div>
-  </aside>
+  </div>
 
   <script type="module" src="./js/app.js"></script>
 </body>

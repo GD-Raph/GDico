@@ -2,11 +2,36 @@ import * as echarts from 'echarts';
 import { forceLayout } from './layout.js';
 
 let _chart = null;
+let _focusedIndex = -1;
+let _isHovering = false;
 
 export function initChart(container) {
   _chart = echarts.init(container, null, { renderer: 'canvas' });
   window.addEventListener('resize', () => _chart.resize());
   return _chart;
+}
+
+export function initFocusPersistence(chart) {
+  let _hoverTimer = null;
+
+  chart.on('mouseover', (params) => {
+    if (params.dataType !== 'node') return;
+    _isHovering = true;
+    clearTimeout(_hoverTimer);
+  });
+
+  chart.on('mouseout', (params) => {
+    if (params.dataType !== 'node') return;
+    _isHovering = false;
+    if (_focusedIndex < 0) return;
+
+    clearTimeout(_hoverTimer);
+    _hoverTimer = setTimeout(() => {
+      if (!_isHovering && _focusedIndex >= 0) {
+        chart.dispatchAction({ type: 'highlight', seriesIndex: 0, dataIndex: _focusedIndex });
+      }
+    }, 150);
+  });
 }
 
 export function renderGraph(chart, { nodes, links, categories }) {
@@ -77,7 +102,49 @@ export function renderGraph(chart, { nodes, links, categories }) {
   });
 }
 
+export function focusNode(chart, echartsDataIndex) {
+  if (_focusedIndex >= 0) {
+    chart.dispatchAction({ type: 'downplay', seriesIndex: 0, dataIndex: _focusedIndex });
+  }
+
+  _focusedIndex = echartsDataIndex;
+  chart.dispatchAction({ type: 'highlight', seriesIndex: 0, dataIndex: echartsDataIndex });
+  _centerOnNode(chart, echartsDataIndex);
+}
+
+export function unfocusAll(chart) {
+  if (_focusedIndex >= 0) {
+    chart.dispatchAction({ type: 'downplay', seriesIndex: 0, dataIndex: _focusedIndex });
+    _focusedIndex = -1;
+  }
+}
+
+function _centerOnNode(chart, dataIndex) {
+  try {
+    const series = chart.getModel().getSeriesByIndex(0);
+    const data = series.getData();
+    const layout = data.getItemLayout(dataIndex);
+    if (!layout) return;
+
+    const pixel = chart.convertToPixel({ seriesIndex: 0 }, [layout.x, layout.y]);
+    const dom = chart.getDom();
+    const cx = dom.offsetWidth / 2;
+    const cy = dom.offsetHeight / 2;
+
+    chart.dispatchAction({
+      type: 'graphRoam',
+      dx: cx - pixel[0],
+      dy: cy - pixel[1],
+    });
+  } catch (_) {
+    // Layout not yet available (force still running) — silently skip
+  }
+}
+
 export function filterByExpertises(chart, activeExpertises, allNodes, allLinks) {
+  // Reset focus state when filtering
+  _focusedIndex = -1;
+
   const filtered = activeExpertises.size === 0
     ? allNodes
     : allNodes.filter(n =>

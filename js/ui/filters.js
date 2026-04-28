@@ -1,10 +1,10 @@
-const filtersContainer = document.getElementById('filters-container');
+const filterChips = document.getElementById('filter-chips');
 let _onFilterChange = null;
 let _activeExpertises = new Set();
 
 export function initFilters(categories, onFilterChange) {
   _onFilterChange = onFilterChange;
-  
+
   const cats = categories
     .map(c => c.name)
     .filter(name => name !== 'Fantôme')
@@ -14,25 +14,25 @@ export function initFilters(categories, onFilterChange) {
 }
 
 function renderFilters(categories) {
-  filtersContainer.innerHTML = `
+  filterChips.innerHTML = `
     <button class="filter-chip active" data-type="all">Tous</button>
     ${categories.map(cat => `
       <button class="filter-chip" data-cat="${cat}">${cat}</button>
     `).join('')}
   `;
 
-  filtersContainer.addEventListener('click', (e) => {
+  filterChips.addEventListener('click', (e) => {
     const btn = e.target.closest('.filter-chip');
     if (!btn) return;
 
     if (btn.dataset.type === 'all') {
       _activeExpertises.clear();
-      filtersContainer.querySelectorAll('.filter-chip').forEach(b => b.classList.remove('active'));
+      filterChips.querySelectorAll('.filter-chip').forEach(b => b.classList.remove('active'));
       btn.classList.add('active');
     } else {
       const cat = btn.dataset.cat;
-      filtersContainer.querySelector('[data-type="all"]').classList.remove('active');
-      
+      filterChips.querySelector('[data-type="all"]').classList.remove('active');
+
       if (_activeExpertises.has(cat)) {
         _activeExpertises.delete(cat);
         btn.classList.remove('active');
@@ -42,7 +42,7 @@ function renderFilters(categories) {
       }
 
       if (_activeExpertises.size === 0) {
-        filtersContainer.querySelector('[data-type="all"]').classList.add('active');
+        filterChips.querySelector('[data-type="all"]').classList.add('active');
       }
     }
 
