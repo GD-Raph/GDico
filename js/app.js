@@ -1,6 +1,6 @@
 import { fetchGlossaryData } from './data/fetcher.js';
 import { transformData } from './data/transformer.js';
-import { initChart, renderGraph, filterByExpertises, focusNode, unfocusAll, initFocusPersistence } from './graph/chart.js';
+import { initChart, renderGraph, filterByExpertises, focusNode, unfocusAll, initFocusPersistence, updateGraphData } from './graph/chart.js';
 import { initSearch, updateSearch } from './ui/search.js';
 import { initFilters, updateFilterChips } from './ui/filters.js';
 import { initPanel, showTerm, showPlaceholder } from './ui/panel.js';
@@ -65,6 +65,14 @@ async function init() {
 }
 
 async function refreshData() {
+  // Snapshot current node positions before fetching new data.
+  // ECharts adds x/y to node objects during force layout — we reuse them
+  // so the graph doesn't re-animate from scratch after a term is saved.
+  const savedPositions = new Map();
+  _allData?.nodes.forEach(n => {
+    if (n.x != null) savedPositions.set(n.id, { x: n.x, y: n.y });
+  });
+
   sessionStorage.removeItem('gdico_data');
   sessionStorage.removeItem('gdico_timestamp');
   showLoader();
@@ -72,9 +80,17 @@ async function refreshData() {
   try {
     const rawData = await fetchGlossaryData();
     _allData = transformData(rawData);
+
+    // Restore positions on matching nodes so the force layout keeps them in place
+    _allData.nodes.forEach(n => {
+      const pos = savedPositions.get(n.id);
+      if (pos) { n.x = pos.x; n.y = pos.y; }
+    });
+
     _buildNodeMap();
 
-    renderGraph(_chart, { nodes: _allData.nodes, links: _cleanLinks, categories: _allData.categories });
+    updateGraphData(_chart, { nodes: _allData.nodes, links: _cleanLinks });
+
     updateSearch(_allData.nodes);
     updateFilterChips(_allData.categories);
     updateListView(_allData.nodes, _nodeMap);

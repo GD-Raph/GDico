@@ -130,44 +130,44 @@ export function unfocusAll(chart) {
   }
 }
 
-function _centerOnNode(chart, dataIndex) {
-  try {
-    const series = chart.getModel().getSeriesByIndex(0);
-    const data = series.getData();
-    const layout = data.getItemLayout(dataIndex);
-    if (!layout) return;
+function _centerOnNode(_chart, _dataIndex) {
+  // graphRoam is not a documented ECharts action for graph series — no-op for now
+}
 
-    const pixel = chart.convertToPixel({ seriesIndex: 0 }, [layout.x, layout.y]);
-    const dom = chart.getDom();
-    const cx = dom.offsetWidth / 2;
-    const cy = dom.offsetHeight / 2;
-
-    chart.dispatchAction({
-      type: 'graphRoam',
-      dx: cx - pixel[0],
-      dy: cy - pixel[1],
-    });
-  } catch (_) {
-    // Layout not yet available (force still running) — silently skip
-  }
+export function updateGraphData(chart, { nodes, links }) {
+  // Disable layout animation for the update so existing nodes stay in place
+  // and new nodes appear at their computed positions without scattering.
+  chart.setOption({ series: [{ data: nodes, links, force: { ...forceLayout, layoutAnimation: false } }] });
+  // Re-enable layout animation for future user interactions
+  setTimeout(() => chart.setOption({ series: [{ force: forceLayout }] }), 100);
 }
 
 export function filterByExpertises(chart, activeExpertises, allNodes, allLinks) {
   _focusedIndex = -1;
 
-  const isVisible = (n) =>
-    activeExpertises.size === 0 ||
-    n.isGhost ||
-    activeExpertises.has(n.primaryExpertise) ||
-    (n.expertises && n.expertises.some(e => activeExpertises.has(e)));
+  if (activeExpertises.size === 0) {
+    chart.setOption({ series: [{ data: allNodes, links: allLinks }] });
+    return;
+  }
 
-  const filtered = allNodes.filter(isVisible);
+  const isRealVisible = (n) =>
+    !n.isGhost && (
+      activeExpertises.has(n.primaryExpertise) ||
+      (n.expertises?.some(e => activeExpertises.has(e)))
+    );
+
+  const visibleRealNames = new Set(allNodes.filter(isRealVisible).map(n => n.name));
+
+  // Ghost visible only if linked to at least one visible real node
+  const isGhostVisible = (ghost) =>
+    allLinks.some(l =>
+      (l.source === ghost.name && visibleRealNames.has(l.target)) ||
+      (l.target === ghost.name && visibleRealNames.has(l.source))
+    );
+
+  const filtered = allNodes.filter(n => isRealVisible(n) || (n.isGhost && isGhostVisible(n)));
   const visibleNames = new Set(filtered.map(n => n.name));
-
-  // allLinks are _cleanLinks (string names, not mutated by ECharts)
-  const filteredLinks = allLinks.filter(l =>
-    visibleNames.has(l.source) && visibleNames.has(l.target)
-  );
+  const filteredLinks = allLinks.filter(l => visibleNames.has(l.source) && visibleNames.has(l.target));
 
   chart.setOption({ series: [{ data: filtered, links: filteredLinks }] });
 }

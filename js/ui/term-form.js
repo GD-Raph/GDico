@@ -272,9 +272,13 @@ async function submitToSheet(payload) {
   submitBtn.textContent = 'Enregistrement…';
 
   try {
+    const apiKey = import.meta.env.VITE_API_KEY || '';
     const res = await fetch(SHEET_WRITE_URL, {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      headers: {
+        'Content-Type': 'application/json',
+        ...(apiKey ? { 'x-api-key': apiKey } : {}),
+      },
       body: JSON.stringify(payload),
     });
 

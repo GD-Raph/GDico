@@ -23,5 +23,8 @@ yarn-error.log*
 .env.test.local
 .env.production.local
 
+# Build output
+dist/
+
 # Credentials
 datalake-380714-d2e17ea483d1.json

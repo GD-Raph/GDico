@@ -5,40 +5,86 @@ import { fileURLToPath } from 'url';
 import { dirname, join } from 'path';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
+
+// Load .env manually (no dotenv dependency needed in Node 20+)
+try {
+  const env = readFileSync(join(__dirname, '..', '.env'), 'utf-8');
+  env.split('\n').forEach(line => {
+    const [k, ...v] = line.split('=');
+    if (k && !k.startsWith('#') && !(k.trim() in process.env)) {
+      process.env[k.trim()] = v.join('=').trim();
+    }
+  });
+} catch (_) { /* .env absent en prod, on utilise les vars d'env système */ }
+
+const API_KEY        = process.env.API_KEY || '';
+const ALLOWED_ORIGIN = process.env.ALLOWED_ORIGIN || '';
 const CREDENTIALS_PATH = join(__dirname, '..', 'datalake-380714-d2e17ea483d1.json');
 const SPREADSHEET_ID   = '1n1Ab8X5-JY33Q2zJUO5HRIHHQ759p7RU3l16EVHN_vs';
 const SHEET_GID        = 0;
+const VALID_ACTIONS    = new Set(['create', 'update', 'delete']);
 
 const credentials = JSON.parse(readFileSync(CREDENTIALS_PATH, 'utf-8'));
-
-const auth = new google.auth.GoogleAuth({
-  credentials,
-  scopes: ['https://www.googleapis.com/auth/spreadsheets'],
-});
+const auth  = new google.auth.GoogleAuth({ credentials, scopes: ['https://www.googleapis.com/auth/spreadsheets'] });
 const sheets = google.sheets({ version: 'v4', auth });
 
-// Resolve the sheet tab name from its GID
+// Cache sheet name (doesn't change between requests)
+let _sheetName = null;
 async function getSheetName() {
-  const meta = await sheets.spreadsheets.get({ spreadsheetId: SPREADSHEET_ID });
+  if (_sheetName) return _sheetName;
+  const meta  = await sheets.spreadsheets.get({ spreadsheetId: SPREADSHEET_ID });
   const sheet = meta.data.sheets.find(s => s.properties.sheetId === SHEET_GID);
-  if (!sheet) throw new Error(`Onglet avec GID ${SHEET_GID} introuvable.`);
-  return sheet.properties.title;
+  if (!sheet) throw new Error(`Onglet GID ${SHEET_GID} introuvable.`);
+  _sheetName = sheet.properties.title;
+  return _sheetName;
 }
 
 async function getAllValues(sheetName) {
-  const res = await sheets.spreadsheets.values.get({
-    spreadsheetId: SPREADSHEET_ID,
-    range: sheetName,
-  });
+  const res = await sheets.spreadsheets.values.get({ spreadsheetId: SPREADSHEET_ID, range: sheetName });
   return res.data.values || [];
 }
 
 const app = express();
+
+// CORS
+app.use((req, res, next) => {
+  const origin = ALLOWED_ORIGIN || req.headers.origin || 'http://localhost:5173';
+  res.setHeader('Access-Control-Allow-Origin', origin);
+  res.setHeader('Access-Control-Allow-Headers', 'Content-Type, x-api-key');
+  res.setHeader('Access-Control-Allow-Methods', 'POST, OPTIONS');
+  if (req.method === 'OPTIONS') return res.sendStatus(204);
+  next();
+});
+
 app.use(express.json());
+
+// Auth middleware
+app.use('/api', (req, res, next) => {
+  if (API_KEY && req.headers['x-api-key'] !== API_KEY) {
+    return res.status(401).json({ ok: false, error: 'Non autorisé.' });
+  }
+  next();
+});
 
 app.post('/api/terms', async (req, res) => {
   try {
     const { action, originalName, data } = req.body;
+
+    // Validate action
+    if (!VALID_ACTIONS.has(action)) {
+      return res.status(400).json({ ok: false, error: `Action invalide : ${action}` });
+    }
+
+    // Validate term name for create/update
+    if ((action === 'create' || action === 'update') && !data?.Terme?.trim()) {
+      return res.status(400).json({ ok: false, error: 'Le champ Terme est obligatoire.' });
+    }
+
+    // Validate originalName for update/delete
+    if ((action === 'update' || action === 'delete') && !originalName?.trim()) {
+      return res.status(400).json({ ok: false, error: 'originalName est obligatoire pour update/delete.' });
+    }
+
     const sheetName = await getSheetName();
     const allData   = await getAllValues(sheetName);
     const headers   = allData[0] || [];
@@ -81,19 +127,11 @@ app.post('/api/terms', async (req, res) => {
         requestBody: {
           requests: [{
             deleteDimension: {
-              range: {
-                sheetId:    SHEET_GID,
-                dimension:  'ROWS',
-                startIndex: rowIndex,
-                endIndex:   rowIndex + 1,
-              },
+              range: { sheetId: SHEET_GID, dimension: 'ROWS', startIndex: rowIndex, endIndex: rowIndex + 1 },
             },
           }],
         },
       });
-
-    } else {
-      return res.status(400).json({ ok: false, error: `Action inconnue : ${action}` });
     }
 
     res.json({ ok: true });
